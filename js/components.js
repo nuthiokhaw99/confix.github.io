@@ -2,7 +2,6 @@
 
 const Components = {
   get base() {
-    // /admin/ หรือ /admin/login/ ต้องขึ้นไป root
     const depth = location.pathname.replace(/\/$/, '').split('/').filter(Boolean).length;
     return depth === 0 ? 'components/' : '../'.repeat(depth) + 'components/';
   },
@@ -30,6 +29,7 @@ const Components = {
       this.load('header-placeholder', 'header.html'),
       this.load('footer-placeholder', 'footer.html'),
     ]);
+    document.dispatchEvent(new Event('components:loaded'));
   },
 };
 
