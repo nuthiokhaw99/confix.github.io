@@ -1,30 +1,19 @@
 // ── components.js — Component Loader ──
 
 const Components = {
-  get base() {
-    const path     = location.pathname;
-    const segments = path.replace(/\/$/, '').split('/').filter(Boolean);
-
-    const isGitHubPages = location.hostname.includes('github.io');
-
-    if (isGitHubPages) {
-      const repoName = segments[0] || '';
-      return `/${repoName}/components/`;
+  get root() {
+    if (location.hostname.includes('github.io')) {
+      const firstSeg = location.pathname.split('/').filter(Boolean)[0] || '';
+      return '/' + firstSeg + '/';
     }
-
-    const depth = segments.length;
-    if (depth === 0) return 'components/';
-    return '../'.repeat(depth) + 'components/';
+    const depth = location.pathname.replace(/\/$/, '').split('/').filter(Boolean).length;
+    return depth === 0 ? '/' : '../'.repeat(depth);
   },
 
+  get base() { return this.root + 'components/'; },
+
   get adminHref() {
-    const isGitHubPages = location.hostname.includes('github.io');
-    if (isGitHubPages) {
-      const segments = location.pathname.replace(/\/$/, '').split('/').filter(Boolean);
-      const repoName = segments[0] || '';
-      return location.pathname.includes('/admin') ? '#' : `/${repoName}/admin/login/`;
-    }
-    return location.pathname.includes('/admin') ? '#' : 'admin/login/';
+    return location.pathname.includes('/admin') ? '#' : this.root + 'admin/login/';
   },
 
   async load(placeholderId, file) {
