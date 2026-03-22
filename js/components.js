@@ -2,11 +2,28 @@
 
 const Components = {
   get base() {
-    const depth = location.pathname.replace(/\/$/, '').split('/').filter(Boolean).length;
-    return depth === 0 ? 'components/' : '../'.repeat(depth) + 'components/';
+    const path     = location.pathname;
+    const segments = path.replace(/\/$/, '').split('/').filter(Boolean);
+
+    const isGitHubPages = location.hostname.includes('github.io');
+
+    if (isGitHubPages) {
+      const repoName = segments[0] || '';
+      return `/${repoName}/components/`;
+    }
+
+    const depth = segments.length;
+    if (depth === 0) return 'components/';
+    return '../'.repeat(depth) + 'components/';
   },
 
   get adminHref() {
+    const isGitHubPages = location.hostname.includes('github.io');
+    if (isGitHubPages) {
+      const segments = location.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+      const repoName = segments[0] || '';
+      return location.pathname.includes('/admin') ? '#' : `/${repoName}/admin/login/`;
+    }
     return location.pathname.includes('/admin') ? '#' : 'admin/login/';
   },
 
