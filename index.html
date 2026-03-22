@@ -10,6 +10,13 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
+  <!-- set theme ก่อน render เพื่อไม่ให้กระพริบ -->
+  <script>
+    (function() {
+      const t = localStorage.getItem('cfx_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 </head>
 <body>
 
@@ -82,7 +89,6 @@
           ดูรายการชำระเงิน <i class="fi fi-rr-arrow-right"></i>
         </button>
 
-        <!-- ปุ่มเข้าหน้า Admin -->
         <div style="text-align:center; margin-top:16px;">
           <a href="admin/login/" class="btn-admin-link">
             <i class="fi fi-rr-settings"></i> เข้าสู่หน้าแอดมิน
@@ -95,8 +101,6 @@
   <!-- PAGE 2: Select -->
   <div class="page" id="page-select">
     <main class="content">
-
-      <!-- User card -->
       <div class="card user-card">
         <div class="user-avatar" id="user-avatar">ส</div>
         <div class="user-info">
@@ -106,7 +110,6 @@
         <span class="badge badge-year" id="user-year">ปี 1</span>
       </div>
 
-      <!-- Tab toggle -->
       <div class="tab-bar">
         <button class="tab-btn active" id="tab-pending" onclick="App.switchTab('pending')">
           <i class="fi fi-rr-clock"></i> ค้างชำระ
@@ -118,14 +121,12 @@
         </button>
       </div>
 
-      <!-- รายการค้างชำระ -->
       <div id="panel-pending">
         <div id="payment-list">
           <div class="empty-state"><i class="fi fi-rr-refresh empty-icon spin"></i><p>กำลังโหลด...</p></div>
         </div>
       </div>
 
-      <!-- รายการที่ชำระแล้ว -->
       <div id="panel-paid" style="display:none;">
         <div id="paid-list">
           <div class="empty-state"><i class="fi fi-rr-refresh empty-icon spin"></i><p>กำลังโหลด...</p></div>
@@ -142,12 +143,9 @@
   <div class="page" id="page-pay">
     <main class="content">
       <div class="card qr-wrapper">
-
-        <!-- หัวข้อ -->
         <h2 class="heading"><i class="fi fi-rr-qr-scan"></i> สแกน QR เพื่อชำระ</h2>
         <p class="subtext" id="qr-item-name">ค่ากิจกรรมสาขา</p>
 
-        <!-- QR Section (ซ่อนเมื่อชำระแล้ว) -->
         <div id="qr-section">
           <div class="qr-container">
             <div id="qr-loading" style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;">
@@ -159,23 +157,20 @@
           <div class="amount-display" id="qr-amount">฿0</div>
           <p class="subtext" id="qr-real-amount" style="color:var(--brown);font-weight:600;margin-bottom:4px;"></p>
           <p class="subtext"><i class="fi fi-rr-bank"></i> PromptPay · ธนาคารใดก็ได้</p>
-          <p class="subtext"></i> โอนแล้วไม่ต้องส่งสลิป โปรดรอ 2-3 วิ</p>
+          <p class="subtext">โอนแล้วไม่ต้องส่งสลิป โปรดรอ 2-3 วิ</p>
 
-          <!-- countdown -->
           <div class="countdown-box" id="countdown-box">
             <i class="fi fi-rr-clock"></i>
-            ชำระภายใน <span id="qr-countdown" style="font-weight:700;">120</span>
+            ชำระภายใน <span id="qr-countdown" style="font-weight:700;">15:00</span>
           </div>
         </div>
 
-        <!-- Success Section (แสดงเมื่อชำระแล้ว) -->
         <div id="success-section" style="display:none;">
           <div class="success-icon">
             <i class="fi fi-ss-check-circle"></i>
           </div>
         </div>
 
-        <!-- Status box -->
         <div class="status-box pending" id="status-box">
           <i class="fi fi-rr-time-past"></i> รอการชำระเงิน...
         </div>
@@ -207,21 +202,16 @@
         const next   = isDark ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('cfx_theme', next);
-        document.getElementById('theme-icon').className =
-          next === 'dark' ? 'fi fi-rr-sun' : 'fi fi-rr-moon';
+        this._setIcon(next);
+      },
+      _setIcon(theme) {
+        const el = document.getElementById('theme-icon');
+        if (el) el.className = theme === 'dark' ? 'fi fi-rr-sun' : 'fi fi-rr-moon';
       },
       init() {
         const saved = localStorage.getItem('cfx_theme') || 'light';
-        document.documentElement.setAttribute('data-theme', saved);
-        // icon จะ set หลัง header โหลด — ทำใน MutationObserver
-        const obs = new MutationObserver(() => {
-          const btn = document.getElementById('theme-icon');
-          if (btn) {
-            btn.className = saved === 'dark' ? 'fi fi-rr-sun' : 'fi fi-rr-moon';
-            obs.disconnect();
-          }
-        });
-        obs.observe(document.body, { childList: true, subtree: true });
+        document.addEventListener('components:loaded', () => this._setIcon(saved));
+        setTimeout(() => this._setIcon(saved), 800);
       },
     };
     Theme.init();
