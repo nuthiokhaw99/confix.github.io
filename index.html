@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 28 28%22><rect width=%2228%22 height=%2228%22 rx=%228%22 fill=%22%234A3520%22/><path d=%22M7 14C7 10.134 10.134 7 14 7s7 3.134 7 7-3.134 7-7 7-7-3.134-7-7z%22 fill=%22%23C8A97A%22 opacity=%220.3%22/><circle cx=%2214%22 cy=%2214%22 r=%223%22 fill=%22%23C8A97A%22/><path d=%22M14 9v2m0 6v2M9 14h2m6 0h2%22 stroke=%22%23C8A97A%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/></svg>">
+  <title>Confix Payment</title>
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <div id="header-placeholder"></div>
+
+  <!-- Progress Steps -->
+  <div id="steps-bar">
+    <div class="steps">
+      <div class="step active" data-step="1">
+        <div class="step-circle"><i class="fi fi-rr-user"></i></div>
+        <div class="step-label">ข้อมูล</div>
+      </div>
+      <div class="step-line" data-after="1"></div>
+      <div class="step" data-step="2">
+        <div class="step-circle"><i class="fi fi-rr-wallet"></i></div>
+        <div class="step-label">รายการ</div>
+      </div>
+      <div class="step-line" data-after="2"></div>
+      <div class="step" data-step="3">
+        <div class="step-circle"><i class="fi fi-rr-qr-scan"></i></div>
+        <div class="step-label">ชำระเงิน</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 1: Info -->
+  <div class="page active" id="page-info">
+    <main class="content">
+      <div class="card">
+        <h2 class="heading"><i class="fi fi-rr-user"></i> ข้อมูลผู้ชำระเงิน</h2>
+        <p class="subtext" style="margin-bottom:24px;">กรอกข้อมูลเพื่อดูรายการชำระเงินของคุณ</p>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-graduation-cap"></i> ชั้นปีการศึกษา</label>
+          <div class="year-grid">
+            <div class="year-card" data-year="1"><div class="year-num">1</div><div class="year-label">ปีที่ 1</div></div>
+            <div class="year-card" data-year="2"><div class="year-num">2</div><div class="year-label">ปีที่ 2</div></div>
+            <div class="year-card" data-year="3"><div class="year-num">3</div><div class="year-label">ปีที่ 3</div></div>
+            <div class="year-card" data-year="4"><div class="year-num">4</div><div class="year-label">ปีที่ 4</div></div>
+          </div>
+          <div class="subtype-group" id="subtype-3">
+            <button class="subtype-btn selected" data-type="3">หลักปกติ</button>
+            <button class="subtype-btn" data-type="3t">เทียบโอน</button>
+          </div>
+          <div class="subtype-group" id="subtype-4">
+            <button class="subtype-btn selected" data-type="4">หลักปกติ</button>
+            <button class="subtype-btn" data-type="4t">เทียบโอน</button>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="form-group">
+          <label class="form-label" for="input-firstname"><i class="fi fi-rr-id-badge"></i> ชื่อจริง <small style="color:var(--gray-mid)">(ไม่ต้องใส่คำนำหน้า)</small></label>
+          <input type="text" id="input-firstname" class="form-input" placeholder="เช่น สมชาย">
+          <div class="error-msg" id="err-firstname"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-lastname"><i class="fi fi-rr-id-badge"></i> นามสกุล</label>
+          <input type="text" id="input-lastname" class="form-input" placeholder="เช่น ใจดี">
+          <div class="error-msg" id="err-lastname"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-studentid"><i class="fi fi-rr-diploma"></i> รหัสนักศึกษา <small style="color:var(--gray-mid)">(ตัวเลขเท่านั้น)</small></label>
+          <input type="text" id="input-studentid" class="form-input" placeholder="เช่น 2681031741166" maxlength="15" inputmode="numeric">
+          <div class="error-msg" id="err-studentid"></div>
+        </div>
+
+        <button class="btn-primary" id="btn-next-1">
+          ดูรายการชำระเงิน <i class="fi fi-rr-arrow-right"></i>
+        </button>
+
+        <!-- ปุ่มเข้าหน้า Admin -->
+        <div style="text-align:center; margin-top:16px;">
+          <a href="admin/login/" class="btn-admin-link">
+            <i class="fi fi-rr-settings"></i> เข้าสู่หน้าแอดมิน
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- PAGE 2: Select -->
+  <div class="page" id="page-select">
+    <main class="content">
+
+      <!-- User card -->
+      <div class="card user-card">
+        <div class="user-avatar" id="user-avatar">ส</div>
+        <div class="user-info">
+          <div class="user-name" id="user-greeting">ชื่อ นามสกุล</div>
+          <div class="user-code" id="user-id"><i class="fi fi-rr-diploma"></i> รหัส: —</div>
+        </div>
+        <span class="badge badge-year" id="user-year">ปี 1</span>
+      </div>
+
+      <!-- Tab toggle -->
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-pending" onclick="App.switchTab('pending')">
+          <i class="fi fi-rr-clock"></i> ค้างชำระ
+          <span class="tab-count" id="count-pending">0</span>
+        </button>
+        <button class="tab-btn" id="tab-paid" onclick="App.switchTab('paid')">
+          <i class="fi fi-rr-check-circle"></i> ชำระแล้ว
+          <span class="tab-count tab-count-paid" id="count-paid">0</span>
+        </button>
+      </div>
+
+      <!-- รายการค้างชำระ -->
+      <div id="panel-pending">
+        <div id="payment-list">
+          <div class="empty-state"><i class="fi fi-rr-refresh empty-icon spin"></i><p>กำลังโหลด...</p></div>
+        </div>
+      </div>
+
+      <!-- รายการที่ชำระแล้ว -->
+      <div id="panel-paid" style="display:none;">
+        <div id="paid-list">
+          <div class="empty-state"><i class="fi fi-rr-refresh empty-icon spin"></i><p>กำลังโหลด...</p></div>
+        </div>
+      </div>
+
+      <button class="btn-outline" onclick="App.goInfo()" style="margin-top:8px;">
+        <i class="fi fi-rr-arrow-left"></i> แก้ไขข้อมูล
+      </button>
+    </main>
+  </div>
+
+  <!-- PAGE 3: QR Pay -->
+  <div class="page" id="page-pay">
+    <main class="content">
+      <div class="card qr-wrapper">
+
+        <!-- หัวข้อ -->
+        <h2 class="heading"><i class="fi fi-rr-qr-scan"></i> สแกน QR เพื่อชำระ</h2>
+        <p class="subtext" id="qr-item-name">ค่ากิจกรรมสาขา</p>
+
+        <!-- QR Section (ซ่อนเมื่อชำระแล้ว) -->
+        <div id="qr-section">
+          <div class="qr-container">
+            <div id="qr-loading" style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;">
+              <i class="fi fi-rr-refresh spin" style="font-size:2.5rem;color:var(--gray-mid)"></i>
+            </div>
+            <img id="qr-img" src="" alt="QR Code" width="220" height="220" style="display:none;">
+          </div>
+
+          <div class="amount-display" id="qr-amount">฿0</div>
+          <p class="subtext" id="qr-real-amount" style="color:var(--brown);font-weight:600;margin-bottom:4px;"></p>
+          <p class="subtext"><i class="fi fi-rr-bank"></i> PromptPay · ธนาคารใดก็ได้</p>
+          <p class="subtext"></i> โอนแล้วไม่ต้องส่งสลิป โปรดรอ 2-3 วิ</p>
+
+          <!-- countdown -->
+          <div class="countdown-box" id="countdown-box">
+            <i class="fi fi-rr-clock"></i>
+            ชำระภายใน <span id="qr-countdown" style="font-weight:700;">120</span>
+          </div>
+        </div>
+
+        <!-- Success Section (แสดงเมื่อชำระแล้ว) -->
+        <div id="success-section" style="display:none;">
+          <div class="success-icon">
+            <i class="fi fi-ss-check-circle"></i>
+          </div>
+        </div>
+
+        <!-- Status box -->
+        <div class="status-box pending" id="status-box">
+          <i class="fi fi-rr-time-past"></i> รอการชำระเงิน...
+        </div>
+
+        <button id="btn-cancel-pay" class="btn-outline" style="margin-top:12px;display:none;" onclick="App.cancelPayment()">
+          <i class="fi fi-rr-cross-circle"></i> ยกเลิก
+        </button>
+      </div>
+
+      <button class="btn-outline" id="btn-back-pay" onclick="App.cancelPayment()">
+        <i class="fi fi-rr-arrow-left"></i> กลับเลือกรายการ
+      </button>
+    </main>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  <div class="toast" id="toast"></div>
+
+  <script src="js/db.js"></script>
+  <script src="js/payment.config.js"></script>
+  <script src="js/payment.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const Theme = {
+      toggle() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const next   = isDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('cfx_theme', next);
+        document.getElementById('theme-icon').className =
+          next === 'dark' ? 'fi fi-rr-sun' : 'fi fi-rr-moon';
+      },
+      init() {
+        const saved = localStorage.getItem('cfx_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+        // icon จะ set หลัง header โหลด — ทำใน MutationObserver
+        const obs = new MutationObserver(() => {
+          const btn = document.getElementById('theme-icon');
+          if (btn) {
+            btn.className = saved === 'dark' ? 'fi fi-rr-sun' : 'fi fi-rr-moon';
+            obs.disconnect();
+          }
+        });
+        obs.observe(document.body, { childList: true, subtree: true });
+      },
+    };
+    Theme.init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+/* ── Header ── */
+.site-header       { background: var(--white); border-bottom: 1px solid var(--gray-lt); position: sticky; top: 0; z-index: 100; }
+.header-inner      { max-width: 600px; margin: 0 auto; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+.header-brand      { display: flex; align-items: center; gap: 10px; }
+.brand-name        { font-family: 'Kanit', sans-serif; font-size: 1.2rem; color: var(--brown-dk); font-weight: 700; }
+.brand-accent      { color: var(--brown-lt); }
+.header-badge      { font-size: .75rem; color: var(--gray-mid); border: 1px solid var(--gray-lt); border-radius: 20px; padding: 4px 12px; }
+
+/* ── Footer ── */
+.site-footer       { background: var(--white); border-top: 1px solid var(--gray-lt); padding: 14px 16px; text-align: center; }
+.footer-inner      { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: .82rem; color: var(--gray-mid); }
+.footer-sep        { opacity: .5; }
+.footer-admin      { color: var(--brown); font-weight: 600; }
+.footer-admin:hover{ text-decoration: underline; }

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — Confix Payment</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="../../css/admin-login.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card" id="login-card">
+
+      <div class="login-logo">
+        <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="#4A3520"/>
+          <path d="M7 14C7 10.134 10.134 7 14 7s7 3.134 7 7-3.134 7-7 7-7-3.134-7-7z" fill="#C8A97A" opacity="0.3"/>
+          <circle cx="14" cy="14" r="3" fill="#C8A97A"/>
+          <path d="M14 9v2m0 6v2M9 14h2m6 0h2" stroke="#C8A97A" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <h1>ConfixPay</h1>
+        <p>Admin Panel</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-key"></i> Admin Key</label>
+        <div class="input-wrap">
+          <input type="password" id="key-input" class="form-input" placeholder="กรอก Admin Key" autocomplete="off">
+          <button class="toggle-eye" onclick="toggleEye()" id="eye-btn" type="button">
+            <i class="fi fi-rr-eye" id="eye-icon"></i>
+          </button>
+        </div>
+        <div class="error-msg" id="err-key"></div>
+      </div>
+
+      <button class="btn-login" id="btn-login" onclick="doLogin()">
+        <i class="fi fi-rr-sign-in-alt"></i> เข้าสู่ระบบ
+      </button>
+
+      <a href="../../" class="back-link">
+        <i class="fi fi-rr-arrow-left"></i> กลับหน้าหลัก
+      </a>
+    </div>
+  </div>
+
+  <script src="../../js/payment.config.js"></script>
+  <script>
+    // ── ตรวจ token เดิมก่อน ถ้ายังใช้ได้ → ข้ามหน้า login ไปเลย ──
+    (async function checkExisting() {
+      const token = sessionStorage.getItem('cfx_admin_token');
+      if (!token) return;
+      try {
+        const res = await callAPI('adminCheck', { token });
+        if (res.valid) window.location.replace('../');
+      } catch(e) {}
+    })();
+
+    // ── Login ──
+    async function doLogin() {
+      const key = document.getElementById('key-input').value.trim();
+      const err = document.getElementById('err-key');
+      err.textContent = '';
+      err.classList.remove('show');
+
+      if (!key) { showErr(err, 'กรุณากรอก Admin Key'); return; }
+
+      setLoading(true);
+      try {
+        const res = await callAPI('adminLogin', { key });
+        if (!res.success) {
+          showErr(err, res.error || 'Admin Key ไม่ถูกต้อง');
+          shake();
+          return;
+        }
+        // บันทึก token ใน sessionStorage (หายเมื่อปิด tab)
+        sessionStorage.setItem('cfx_admin_token', res.token);
+        sessionStorage.setItem('cfx_admin_expire', res.expire);
+        window.location.replace('../');
+      } catch(e) {
+        showErr(err, 'เชื่อมต่อ server ไม่ได้ กรุณาลองใหม่');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // ── Helper: เรียก Apps Script ──
+    function callAPI(action, body) {
+      return fetch(PAYMENT_CONFIG.api_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ...body }),
+      }).then(r => r.json());
+    }
+
+    // ── UI helpers ──
+    function setLoading(on) {
+      const btn = document.getElementById('btn-login');
+      btn.disabled  = on;
+      btn.innerHTML = on
+        ? '<i class="fi fi-rr-refresh spin"></i> กำลังตรวจสอบ...'
+        : '<i class="fi fi-rr-sign-in-alt"></i> เข้าสู่ระบบ';
+    }
+
+    function toggleEye() {
+      const input = document.getElementById('key-input');
+      const icon  = document.getElementById('eye-icon');
+      input.type = input.type === 'password' ? 'text' : 'password';
+      icon.className = input.type === 'password' ? 'fi fi-rr-eye' : 'fi fi-rr-eye-crossed';
+    }
+
+    function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
+
+    function shake() {
+      const card = document.getElementById('login-card');
+      card.classList.add('shake');
+      setTimeout(() => card.classList.remove('shake'), 500);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('key-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') doLogin();
+      });
+    });
+  </script>
+</body>
+</html>

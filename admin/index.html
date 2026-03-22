@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 28 28%22><rect width=%2228%22 height=%2228%22 rx=%228%22 fill=%22%234A3520%22/><path d=%22M7 14C7 10.134 10.134 7 14 7s7 3.134 7 7-3.134 7-7 7-7-3.134-7-7z%22 fill=%22%23C8A97A%22 opacity=%220.3%22/><circle cx=%2214%22 cy=%2214%22 r=%223%22 fill=%22%23C8A97A%22/><path d=%22M14 9v2m0 6v2M9 14h2m6 0h2%22 stroke=%22%23C8A97A%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/></svg>">
+  <title>Admin — Confix Payment</title>
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>body,button,input,select,textarea{font-family:'Kanit',sans-serif!important}</style>
+  <script>
+    // ── Auth Guard ──
+    (function() {
+      try {
+        const s = sessionStorage.getItem('cfx_admin');
+        if (!s) { window.location.replace('login/'); return; }
+        const d = JSON.parse(s);
+        if (!d.expire || Date.now() > d.expire) {
+          sessionStorage.removeItem('cfx_admin');
+          window.location.replace('login/');
+        }
+      } catch(e) {
+        window.location.replace('login/');
+      }
+    })();
+    function getAdminToken() { return ''; }
+    function adminLogout() {
+      sessionStorage.removeItem('cfx_admin');
+      window.location.replace('login/');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Overlay สำหรับปิด sidebar บน mobile -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <h1>ConfixPay</h1>
+      <span>Admin Panel</span>
+    </div>
+    <nav class="nav-section">
+      <div class="nav-label">ภาพรวม</div>
+      <div class="nav-item active" data-view="dashboard" onclick="Admin.showView('dashboard')">
+        <i class="fi fi-rr-chart-pie nav-icon"></i> Dashboard
+      </div>
+    </nav>
+    <nav class="nav-section">
+      <div class="nav-label">จัดการ</div>
+      <div class="nav-item" data-view="students" onclick="Admin.showView('students')">
+        <i class="fi fi-rr-users nav-icon"></i> จัดการนักศึกษา
+      </div>
+      <div class="nav-item" data-view="payments" onclick="Admin.showView('payments')">
+        <i class="fi fi-rr-credit-card nav-icon"></i> รายการชำระเงิน
+      </div>
+      <div class="nav-item" data-view="items" onclick="Admin.showView('items')">
+        <i class="fi fi-rr-list nav-icon"></i> จัดการรายการ
+      </div>
+      <div class="nav-item" data-view="keys" id="nav-keys" style="display:none" onclick="Admin.showView('keys')">
+        <i class="fi fi-rr-key nav-icon"></i> จัดการ Key
+      </div>
+      <div class="nav-item" data-view="expenses" onclick="Admin.showView('expenses')">
+        <i class="fi fi-rr-receipt nav-icon"></i> รายจ่าย / ใบเบิกเงิน
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="../"><i class="fi fi-rr-arrow-left"></i> กลับหน้าหลัก</a>
+      <a href="#" onclick="adminLogout()" style="margin-top:8px;color:var(--red,#A04040);">
+        <i class="fi fi-rr-sign-out-alt"></i> ออกจากระบบ
+      </a>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-header">
+      <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="เมนู">
+        <i class="fi fi-rr-menu-burger"></i>
+      </button>
+      <h2 id="page-title">ภาพรวม</h2>
+      <div class="sub">Confix Payment Admin</div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- Dashboard -->
+      <div class="admin-view active" id="view-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label"><i class="fi fi-rr-receipt"></i> การชำระทั้งหมด</div>
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-sub">รายการ</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fi fi-rr-wallet"></i> ยอดรวม</div>
+            <div class="stat-value" id="stat-amount">—</div>
+            <div class="stat-sub">บาท</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fi fi-rr-list"></i> รายการที่เปิดอยู่</div>
+            <div class="stat-value" id="stat-items">—</div>
+            <div class="stat-sub">รายการ</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;">
+          <div class="table-card" style="padding:20px;">
+            <h3 style="font-weight:600;margin-bottom:12px;"><i class="fi fi-rr-graduation-cap"></i> แยกตามชั้นปี</h3>
+            <div id="year-breakdown"><p class="muted">กำลังโหลด...</p></div>
+          </div>
+          <div class="table-card">
+            <div class="table-header"><h3><i class="fi fi-rr-time-forward"></i> การชำระล่าสุด</h3></div>
+            <div style="overflow-x:auto">
+              <table>
+                <thead><tr><th>ชื่อ</th><th>ปี</th><th>รายการ</th><th>จำนวน</th><th>วันที่</th></tr></thead>
+                <tbody id="recent-payments"><tr><td colspan="5" class="empty-td">กำลังโหลด...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Students -->
+      <div class="admin-view" id="view-students">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <h3 style="font-weight:600;"><i class="fi fi-rr-users"></i> รายชื่อนักศึกษา <span id="students-count" class="muted" style="font-size:.82rem;font-weight:400;"></span></h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" class="search-input" id="search-students" placeholder="ค้นหาชื่อ / รหัส" oninput="Admin.filterStudents()">
+            <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="Admin.handleImport(this)">
+            <button class="btn-outline-brown" id="btn-import" onclick="Admin.triggerImport()">
+              <i class="fi fi-rr-file-upload"></i> Import CSV
+            </button>
+            <button class="btn-primary" onclick="Admin.openStudentModal()">
+              <i class="fi fi-rr-user-add"></i> เพิ่มนักศึกษา
+            </button>
+          </div>
+        </div>
+        <div class="hint-box">
+          <i class="fi fi-rr-info"></i> รูปแบบ CSV:
+          <code>studentId, firstName, lastName, year, type, phone, email</code>
+          &nbsp;|&nbsp; <strong>year</strong> = 1–4 &nbsp;|&nbsp; <strong>type</strong> = ปกติ หรือ เทียบโอน
+        </div>
+        <div class="table-card">
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th><th>ชั้นปี</th><th>เบอร์โทร</th><th>จัดการ</th></tr></thead>
+              <tbody id="students-tbody"><tr><td colspan="5" class="empty-td">กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payments -->
+      <div class="admin-view" id="view-payments">
+        <div class="table-card">
+          <div class="table-header">
+            <h3><i class="fi fi-rr-credit-card"></i> รายการชำระเงินทั้งหมด <span id="payments-count" class="muted" style="font-size:.82rem;font-weight:400;"></span></h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+              <input type="text" class="search-input" id="search-payments" placeholder="ค้นหาชื่อ / รหัส" oninput="Admin.filterPayments()">
+              <select class="filter-select" id="filter-year" onchange="Admin.filterPayments()">
+                <option value="">ทุกชั้นปี</option>
+                <option value="1">ปี 1</option><option value="2">ปี 2</option>
+                <option value="3">ปี 3 (ปกติ)</option><option value="3t">ปี 3 (เทียบโอน)</option>
+                <option value="4">ปี 4 (ปกติ)</option><option value="4t">ปี 4 (เทียบโอน)</option>
+              </select>
+              <select class="filter-select" id="filter-item" onchange="Admin.filterPayments()">
+                <option value="">ทุกรายการ</option>
+              </select>
+              <button class="btn-primary" onclick="Admin.exportCSV()">
+                <i class="fi fi-rr-file-export"></i> Export CSV
+              </button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th><th>ชั้นปี</th><th>รายการ</th><th>จำนวน</th><th>วันที่</th><th>สถานะ</th></tr></thead>
+              <tbody id="payments-tbody"><tr><td colspan="7" class="empty-td">กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="admin-view" id="view-items">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 style="font-weight:600;"><i class="fi fi-rr-list"></i> รายการชำระเงิน</h3>
+          <button class="btn-primary" onclick="Admin.openItemModal()">
+            <i class="fi fi-rr-plus"></i> เพิ่มรายการ
+          </button>
+        </div>
+        <div class="table-card">
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>ชื่อรายการ</th><th>จำนวน</th><th>กลุ่มเป้าหมาย</th><th>ครบกำหนด</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+              <tbody id="items-tbody"><tr><td colspan="6" class="empty-td">กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Keys ══ -->
+      <div class="admin-view" id="view-keys">
+
+        <!-- Keys Table -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <h3 style="font-weight:600"><i class="fi fi-rr-key"></i> Admin Keys ทั้งหมด</h3>
+          <button class="btn-primary" onclick="AdminKeys.openCreateModal()">
+            <i class="fi fi-rr-plus"></i> สร้าง Key ใหม่
+          </button>
+        </div>
+        <div class="table-card" style="margin-bottom:24px">
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>ชื่อ / Key ID</th><th>สิทธิ์</th><th>สถานะ</th><th>สร้างเมื่อ</th><th>จัดการ</th></tr></thead>
+              <tbody id="keys-tbody"><tr><td colspan="5" class="empty-td">กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <h3 style="font-weight:600"><i class="fi fi-rr-time-past"></i> Activity Log</h3>
+          <select class="filter-select" id="filter-log-key" onchange="AdminKeys.filterLogs()">
+            <option value="">ทุก Key</option>
+          </select>
+        </div>
+        <div class="table-card">
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>เวลา</th><th>Key</th><th>Action</th><th>รายละเอียด</th></tr></thead>
+              <tbody id="logs-tbody"><tr><td colspan="4" class="empty-td">กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Expenses ══ -->
+      <div class="admin-view" id="view-expenses">
+
+        <!-- Header + controls -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <h3 style="font-weight:600"><i class="fi fi-rr-receipt"></i> รายจ่าย / ใบเบิกเงิน</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input type="month" class="filter-select" id="filter-expense-month" onchange="Expenses.loadView()">
+            <button class="btn-outline-brown" onclick="Expenses.printSummary()">
+              <i class="fi fi-rr-print"></i> พิมพ์สรุป
+            </button>
+            <button class="btn-primary" onclick="Expenses.openAddModal()">
+              <i class="fi fi-rr-plus"></i> เพิ่มรายจ่าย
+            </button>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:20px">
+          <div class="stat-card">
+            <div class="stat-label"><i class="fi fi-rr-wallet"></i> รายจ่ายรวม</div>
+            <div class="stat-value" id="expense-total">—</div>
+            <div class="stat-sub" id="expense-count">0 รายการ</div>
+          </div>
+          <div class="stat-card" style="min-width:220px">
+            <div class="stat-label"><i class="fi fi-rr-chart-pie"></i> แยกตามหมวดหมู่</div>
+            <div id="expense-by-category" style="margin-top:8px"><p class="muted">กำลังโหลด...</p></div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-card">
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>วันที่ / เลขที่</th>
+                  <th>ผู้รับเงิน</th>
+                  <th>หมวด / รายการ</th>
+                  <th>จำนวนเงิน</th>
+                  <th>ผู้อนุมัติ</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="expenses-tbody"><tr><td colspan="6" class="empty-td">กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Add Student -->
+  <div class="modal-overlay" id="modal-student">
+    <div class="modal">
+      <h3><i class="fi fi-rr-user-add"></i> เพิ่มนักศึกษา</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-diploma"></i> รหัสนักศึกษา</label>
+          <input type="text" class="form-input" id="s-id" placeholder="เช่น 2681031741166" maxlength="15">
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-graduation-cap"></i> ชั้นปี</label>
+          <select class="form-input form-select" id="s-year">
+            <option value="1">ปี 1</option><option value="2">ปี 2</option>
+            <option value="3">ปี 3</option><option value="4">ปี 4</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-id-badge"></i> ชื่อจริง</label>
+          <input type="text" class="form-input" id="s-firstname" placeholder="สมชาย">
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-id-badge"></i> นามสกุล</label>
+          <input type="text" class="form-input" id="s-lastname" placeholder="ใจดี">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-settings"></i> ประเภท</label>
+          <select class="form-input form-select" id="s-type">
+            <option value="ปกติ">หลักปกติ</option>
+            <option value="เทียบโอน">เทียบโอน</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-phone-call"></i> เบอร์โทร</label>
+          <input type="text" class="form-input" id="s-phone" placeholder="08XXXXXXXX">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm" onclick="Admin.closeModal('modal-student')"><i class="fi fi-rr-cross"></i> ยกเลิก</button>
+        <button class="btn-primary" id="btn-save-student" onclick="Admin.saveStudent()"><i class="fi fi-rr-disk"></i> บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add/Edit Item -->
+  <div class="modal-overlay" id="modal-item">
+    <div class="modal">
+      <h3 id="modal-item-title"><i class="fi fi-rr-file-add"></i> เพิ่มรายการชำระเงิน</h3>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-document"></i> ชื่อรายการ</label>
+        <input type="text" class="form-input" id="item-name" placeholder="เช่น ค่ากิจกรรมสาขา">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-wallet"></i> จำนวนเงิน (บาท)</label>
+          <input type="number" class="form-input" id="item-amount" placeholder="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-calendar"></i> ครบกำหนด</label>
+          <input type="date" class="form-input" id="item-deadline">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-graduation-cap"></i> กลุ่มเป้าหมาย</label>
+        <div class="year-check-grid">
+          <label><input type="checkbox" class="year-check" value="1"> ปี 1</label>
+          <label><input type="checkbox" class="year-check" value="2"> ปี 2</label>
+          <label><input type="checkbox" class="year-check" value="3"> ปี 3 (ปกติ)</label>
+          <label><input type="checkbox" class="year-check" value="3t"> ปี 3 (เทียบโอน)</label>
+          <label><input type="checkbox" class="year-check" value="4"> ปี 4 (ปกติ)</label>
+          <label><input type="checkbox" class="year-check" value="4t"> ปี 4 (เทียบโอน)</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-settings"></i> สถานะ</label>
+        <select class="form-input form-select" id="item-active">
+          <option value="true">เปิดใช้งาน</option>
+          <option value="false">ปิดการใช้งาน</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm" onclick="Admin.closeModal('modal-item')"><i class="fi fi-rr-cross"></i> ยกเลิก</button>
+        <button class="btn-primary" id="btn-save-item" onclick="Admin.saveItem()"><i class="fi fi-rr-disk"></i> บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <!-- Modal: Create Key -->
+  <div class="modal-overlay" id="modal-create-key">
+    <div class="modal">
+      <h3><i class="fi fi-rr-key"></i> สร้าง Admin Key ใหม่</h3>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-user"></i> ชื่อผู้ใช้ / ตำแหน่ง</label>
+        <input type="text" class="form-input" id="new-key-label" placeholder="เช่น ผู้ช่วยแอดมิน">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-key"></i> Key (สุ่มอัตโนมัติ)</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" class="form-input" id="new-key-value" readonly style="font-family:monospace;font-size:.85rem;flex:1">
+          <button class="btn-sm" onclick="AdminKeys.copyKey()" title="Copy"><i class="fi fi-rr-copy"></i></button>
+          <button class="btn-sm" onclick="AdminKeys.regenKey()" title="สุ่มใหม่"><i class="fi fi-rr-refresh"></i></button>
+        </div>
+        <p style="font-size:.78rem;color:var(--gray-mid);margin-top:6px"><i class="fi fi-rr-info"></i> Copy key นี้ก่อนบันทึก จะไม่แสดงอีก</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-shield-check"></i> สิทธิ์การใช้งาน</label>
+        <div style="display:flex;flex-direction:column;gap:10px;padding:12px;border:1.5px solid var(--gray-lt);border-radius:8px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="new-perm-students" checked> จัดการนักศึกษา
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="new-perm-items" checked> จัดการรายการชำระ
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="new-perm-payments"> ดูรายการชำระเงิน
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm" onclick="AdminKeys.closeModal('modal-create-key')"><i class="fi fi-rr-cross"></i> ยกเลิก</button>
+        <button class="btn-primary" id="btn-save-key" onclick="AdminKeys.saveCreateKey()"><i class="fi fi-rr-disk"></i> บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Key -->
+  <div class="modal-overlay" id="modal-edit-key">
+    <div class="modal">
+      <h3><i class="fi fi-rr-edit"></i> แก้ไขสิทธิ์ Key</h3>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-user"></i> ชื่อผู้ใช้</label>
+        <input type="text" class="form-input" id="edit-key-label" readonly style="background:var(--cream)">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-shield-check"></i> สิทธิ์การใช้งาน</label>
+        <div style="display:flex;flex-direction:column;gap:10px;padding:12px;border:1.5px solid var(--gray-lt);border-radius:8px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="edit-perm-students"> จัดการนักศึกษา
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="edit-perm-items"> จัดการรายการชำระ
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="edit-perm-payments"> ดูรายการชำระเงิน
+          </label>
+        </div>
+      </div>
+
+      <!-- Reset Key Section -->
+      <div class="form-group">
+        <button type="button" class="btn-outline" style="width:100%;font-size:.88rem" onclick="AdminKeys.toggleResetKey()">
+          <i class="fi fi-rr-refresh"></i> รีเซ็ต Key ใหม่
+        </button>
+        <div id="edit-key-section" style="display:none;margin-top:12px">
+          <label class="form-label"><i class="fi fi-rr-key"></i> Key ใหม่</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" class="form-input" id="edit-new-key" readonly style="font-family:monospace;font-size:.85rem;flex:1">
+            <button class="btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('edit-new-key').value).then(()=>alert('Copy แล้ว!'))" title="Copy"><i class="fi fi-rr-copy"></i></button>
+            <button class="btn-sm" onclick="document.getElementById('edit-new-key').value=AdminKeys._generateKey()" title="สุ่มใหม่"><i class="fi fi-rr-refresh"></i></button>
+          </div>
+          <p style="font-size:.78rem;color:var(--red);margin-top:6px"><i class="fi fi-rr-info"></i> Copy key ก่อนบันทึก — จะไม่แสดงอีก</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-sm" onclick="AdminKeys.closeModal('modal-edit-key')"><i class="fi fi-rr-cross"></i> ยกเลิก</button>
+        <button class="btn-primary" onclick="AdminKeys.saveEditKey()"><i class="fi fi-rr-disk"></i> บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Expense -->
+  <div class="modal-overlay" id="modal-expense">
+    <div class="modal" style="max-width:540px">
+      <h3><i class="fi fi-rr-receipt"></i> เพิ่มรายจ่าย / ใบเบิกเงิน</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-calendar"></i> วันที่</label>
+          <input type="date" class="form-input" id="exp-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-wallet"></i> จำนวนเงิน (บาท)</label>
+          <input type="number" class="form-input" id="exp-amount" placeholder="0.00" step="0.01">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-user"></i> ชื่อผู้รับเงิน</label>
+        <input type="text" class="form-input" id="exp-recipient" placeholder="เช่น นายสมชาย ใจดี">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-list"></i> หมวดหมู่</label>
+          <select class="form-input form-select" id="exp-category">
+            <option value="ค่าอุปกรณ์">ค่าอุปกรณ์</option>
+            <option value="ค่าอาหาร/เครื่องดื่ม">ค่าอาหาร/เครื่องดื่ม</option>
+            <option value="ค่าเดินทาง">ค่าเดินทาง</option>
+            <option value="ค่าสถานที่">ค่าสถานที่</option>
+            <option value="ค่าประชาสัมพันธ์">ค่าประชาสัมพันธ์</option>
+            <option value="ค่ากิจกรรม">ค่ากิจกรรม</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fi fi-rr-user-check"></i> ผู้อนุมัติ</label>
+          <input type="text" class="form-input" id="exp-approved" placeholder="ชื่อผู้อนุมัติ">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-document"></i> รายการ / วัตถุประสงค์</label>
+        <textarea class="form-input" id="exp-description" rows="2" placeholder="อธิบายรายการจ่ายเงิน" style="resize:vertical"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-comment"></i> หมายเหตุ (ถ้ามี)</label>
+        <input type="text" class="form-input" id="exp-note" placeholder="ข้อมูลเพิ่มเติม">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm" onclick="Expenses.closeModal()"><i class="fi fi-rr-cross"></i> ยกเลิก</button>
+        <button class="btn-primary" id="btn-save-expense" onclick="Expenses.saveExpense()">
+          <i class="fi fi-rr-disk"></i> บันทึก
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/db.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/admin-keys.js"></script>
+  <script src="../js/expenses.js"></script>
+  <script src="../js/components.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    function toggleSidebar() {
+      const sidebar  = document.getElementById('sidebar');
+      const main     = document.querySelector('.admin-main');
+      const overlay  = document.getElementById('sidebar-overlay');
+      const isMobile = window.innerWidth < 769;
+      if (isMobile) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+      } else {
+        sidebar.classList.toggle('closed');
+        main.classList.toggle('full');
+      }
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebar-overlay').classList.remove('show');
+    }
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => { if (window.innerWidth < 769) closeSidebar(); });
+    });
+  </script>
+
+<script>
+  // ── Session Timeout Warning (แจ้งเตือน 5 นาทีก่อนหมดอายุ) ──
+  (function() {
+    const s = sessionStorage.getItem('cfx_admin');
+    if (!s) return;
+    try {
+      const d = JSON.parse(s);
+      const warnAt = d.expire - 5 * 60 * 1000;
+      const now = Date.now();
+      if (now >= warnAt) return;
+      setTimeout(() => {
+        if (confirm('⚠️ Session ใกล้หมดอายุใน 5 นาที\nกด OK เพื่อต่ออายุ หรือ Cancel เพื่อออกจากระบบ')) {
+          // ต่ออายุ 4 ชั่วโมง
+          d.expire = Date.now() + 4 * 60 * 60 * 1000;
+          sessionStorage.setItem('cfx_admin', JSON.stringify(d));
+        } else {
+          adminLogout();
+        }
+      }, warnAt - now);
+    } catch(e) {}
+  })();
+</script>
+
+</body>
+</html>

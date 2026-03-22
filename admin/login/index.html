@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 28 28%22><rect width=%2228%22 height=%2228%22 rx=%228%22 fill=%22%234A3520%22/><path d=%22M7 14C7 10.134 10.134 7 14 7s7 3.134 7 7-3.134 7-7 7-7-3.134-7-7z%22 fill=%22%23C8A97A%22 opacity=%220.3%22/><circle cx=%2214%22 cy=%2214%22 r=%223%22 fill=%22%23C8A97A%22/><path d=%22M14 9v2m0 6v2M9 14h2m6 0h2%22 stroke=%22%23C8A97A%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/></svg>">
+  <title>Admin Login — Confix Payment</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="../../css/admin-login.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card" id="login-card">
+      <div class="login-logo">
+        <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="#4A3520"/>
+          <path d="M7 14C7 10.134 10.134 7 14 7s7 3.134 7 7-3.134 7-7 7-7-3.134-7-7z" fill="#C8A97A" opacity="0.3"/>
+          <circle cx="14" cy="14" r="3" fill="#C8A97A"/>
+          <path d="M14 9v2m0 6v2M9 14h2m6 0h2" stroke="#C8A97A" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <h1>ConfixPay</h1>
+        <p>Admin Panel</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="fi fi-rr-key"></i> Admin Key</label>
+        <div class="input-wrap">
+          <input type="password" id="key-input" class="form-input" placeholder="กรอก Admin Key" autocomplete="off">
+          <button class="toggle-eye" onclick="toggleEye()" type="button">
+            <i class="fi fi-rr-eye" id="eye-icon"></i>
+          </button>
+        </div>
+        <div class="error-msg" id="err-key"></div>
+      </div>
+
+      <button class="btn-login" id="btn-login" onclick="doLogin()">
+        <i class="fi fi-rr-sign-in-alt"></i> เข้าสู่ระบบ
+      </button>
+      <a href="../../" class="back-link"><i class="fi fi-rr-arrow-left"></i> กลับหน้าหลัก</a>
+    </div>
+  </div>
+
+  <script>
+    const SUPA_URL = 'https://oqdvrzflkshxyhepaqep.supabase.co';
+    const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xZHZyemZsa3NoeHloZXBhcWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2MTIyMDAsImV4cCI6MjA4OTE4ODIwMH0.Eo4DsJ82V9PEiEhewiq6KHyP3HzNdO80oFSNQOASHcg';
+
+    // ตรวจ session เดิม
+    (function() {
+      const s = sessionStorage.getItem('cfx_admin');
+      if (!s) return;
+      try {
+        const d = JSON.parse(s);
+        if (d.expire && Date.now() < d.expire) window.location.replace('../');
+      } catch(e) {}
+    })();
+
+    // hash SHA-256 ใน browser
+    async function sha256(str) {
+      const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    async function doLogin() {
+      const key = document.getElementById('key-input').value.trim();
+      const err = document.getElementById('err-key');
+      err.textContent = ''; err.classList.remove('show');
+      if (!key) { showErr('กรุณากรอก Admin Key'); return; }
+
+      setLoading(true);
+      try {
+        const hash = await sha256(key);
+
+        // ค้นหา key ใน Supabase
+        const res  = await fetch(
+          `${SUPA_URL}/rest/v1/admin_keys?key_hash=eq.${hash}&active=eq.true&select=*`,
+          { headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` } }
+        );
+        const rows = await res.json();
+
+        if (!rows.length) { showErr('Admin Key ไม่ถูกต้อง หรือถูกระงับ'); shake(); return; }
+
+        const admin = rows[0];
+
+        // บันทึก session
+        const expire = Date.now() + 4 * 60 * 60 * 1000;
+        sessionStorage.setItem('cfx_admin', JSON.stringify({
+          keyId:       admin.key_id,
+          label:       admin.label,
+          role:        admin.role,
+          canStudents: admin.can_students,
+          canItems:    admin.can_items,
+          canPayments: admin.can_payments,
+          canKeys:     admin.can_keys,
+          expire,
+        }));
+
+        // บันทึก log
+        await fetch(`${SUPA_URL}/rest/v1/admin_logs`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`,
+            'Content-Type': 'application/json', 'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({
+            key_id: admin.key_id, label: admin.label,
+            action: 'login', detail: 'เข้าสู่ระบบ',
+          }),
+        });
+
+        window.location.replace('../');
+      } catch(e) {
+        showErr('เชื่อมต่อไม่ได้ กรุณาลองใหม่');
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function setLoading(on) {
+      const btn = document.getElementById('btn-login');
+      btn.disabled  = on;
+      btn.innerHTML = on
+        ? '<i class="fi fi-rr-refresh spin"></i> กำลังตรวจสอบ...'
+        : '<i class="fi fi-rr-sign-in-alt"></i> เข้าสู่ระบบ';
+    }
+    function toggleEye() {
+      const inp = document.getElementById('key-input');
+      const ico = document.getElementById('eye-icon');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      ico.className = inp.type === 'password' ? 'fi fi-rr-eye' : 'fi fi-rr-eye-crossed';
+    }
+    function showErr(msg) { const e = document.getElementById('err-key'); e.textContent = msg; e.classList.add('show'); }
+    function shake() { const c = document.getElementById('login-card'); c.classList.add('shake'); setTimeout(() => c.classList.remove('shake'), 500); }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('key-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    });
+  </script>
+</body>
+</html>

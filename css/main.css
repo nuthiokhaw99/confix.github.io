@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+/* ── Variables ── */
+:root {
+  --white:      #FAFAF8;
+  --cream:      #F2EDE4;
+  --brown-lt:   #C8A97A;
+  --brown:      #8B6340;
+  --brown-dk:   #4A3520;
+  --charcoal:   #2C2416;
+  --gray-lt:    #E8E0D5;
+  --gray-mid:   #B5A898;
+  --green:      #5A8A5A;
+  --red:        #A04040;
+  --shadow:     rgba(74,53,32,.15);
+  --radius:     12px;
+  --ease:       .25s ease;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html   { font-size: 16px; scroll-behavior: smooth; }
+body   { font-family: 'Kanit', 'Sarabun', sans-serif; background: var(--cream); color: var(--charcoal); min-height: 100vh; display: flex; flex-direction: column; }
+a      { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+input  { font-family: inherit; }
+
+/* ── Layout ── */
+.page        { display: none; flex: 1; flex-direction: column; }
+.page.active { display: flex; }
+main.content { flex: 1; padding: 32px 16px; max-width: 600px; margin: 0 auto; width: 100%; }
+
+/* ── Typography ── */
+.heading    { font-family: 'Kanit', sans-serif; color: var(--brown-dk); }
+h2.heading  { font-size: 1.4rem; margin-bottom: 8px; }
+.subtext    { color: var(--gray-mid); font-size: .9rem; }
+
+/* ── Card ── */
+.card { background: var(--white); border-radius: var(--radius); padding: 28px 24px; box-shadow: 0 2px 16px var(--shadow); margin-bottom: 20px; }
+
+/* ── Form ── */
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-weight: 600; font-size: .9rem; color: var(--brown-dk); margin-bottom: 8px; }
+.form-input {
+  width: 100%; padding: 12px 16px;
+  border: 1.5px solid var(--gray-lt); border-radius: 8px;
+  font-size: 1rem; color: var(--charcoal); background: var(--white);
+  transition: border-color var(--ease);
+}
+.form-input:focus        { border-color: var(--brown-lt); outline: none; }
+.form-input.error        { border-color: var(--red); }
+.error-msg               { color: var(--red); font-size: .82rem; margin-top: 4px; display: none; }
+.error-msg.show          { display: block; }
+.divider                 { border: none; border-top: 1px solid var(--gray-lt); margin: 16px 0; }
+
+/* ── Year Grid ── */
+.year-grid                { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+.year-card                { border: 2px solid var(--gray-lt); border-radius: 10px; padding: 14px 12px; text-align: center; cursor: pointer; transition: all var(--ease); background: var(--white); }
+.year-card:hover          { border-color: var(--brown-lt); background: var(--cream); }
+.year-card.selected       { border-color: var(--brown); background: var(--brown-dk); color: var(--white); }
+.year-card .year-num      { font-family: 'Kanit', sans-serif; font-size: 1.5rem; font-weight: 700; }
+.year-card .year-label    { font-size: .8rem; margin-top: 2px; opacity: .8; }
+.subtype-group            { margin-top: 12px; display: none; gap: 8px; }
+.subtype-group.show       { display: flex; }
+.subtype-btn              { flex: 1; padding: 10px; border-radius: 8px; border: 2px solid var(--gray-lt); background: var(--white); font-size: .9rem; color: var(--charcoal); transition: all var(--ease); }
+.subtype-btn.selected     { border-color: var(--brown); background: var(--brown); color: var(--white); }
+
+/* ── Buttons ── */
+.btn-primary              { width: 100%; padding: 14px; background: var(--brown-dk); color: var(--white); border-radius: 10px; font-size: 1rem; font-weight: 600; transition: all var(--ease); }
+.btn-primary:hover        { background: var(--charcoal); transform: translateY(-1px); }
+.btn-primary:disabled     { background: var(--gray-mid); cursor: not-allowed; transform: none; }
+.btn-outline              { padding: 10px 20px; border-radius: 8px; border: 2px solid var(--brown); color: var(--brown); background: transparent; font-size: .9rem; font-weight: 600; transition: all var(--ease); }
+.btn-outline:hover        { background: var(--brown); color: var(--white); }
+
+/* ── Payment List ── */
+.payment-item             { display: flex; align-items: center; justify-content: space-between; padding: 16px; border: 1.5px solid var(--gray-lt); border-radius: 10px; margin-bottom: 10px; transition: border-color var(--ease); background: var(--white); }
+.payment-item:hover       { border-color: var(--brown-lt); }
+.pay-info .pay-name       { font-weight: 600; font-size: .95rem; }
+.pay-info .pay-amount     { color: var(--brown); font-weight: 700; font-size: 1.05rem; margin-top: 2px; }
+.pay-info .pay-deadline   { font-size: .78rem; color: var(--gray-mid); margin-top: 2px; }
+.btn-pay                  { padding: 9px 18px; background: var(--brown); color: var(--white); border-radius: 8px; font-size: .88rem; font-weight: 600; transition: all var(--ease); white-space: nowrap; }
+.btn-pay:hover            { background: var(--brown-dk); }
+.paid-badge               { padding: 7px 14px; background: #e8f4e8; color: var(--green); border-radius: 8px; font-size: .82rem; font-weight: 600; }
+
+/* ── QR Page ── */
+.qr-wrapper               { text-align: center; }
+.qr-container             { display: inline-block; padding: 20px; background: var(--white); border-radius: var(--radius); box-shadow: 0 4px 20px var(--shadow); margin: 20px auto; }
+.qr-container img         { display: block; }
+.amount-display           { font-family: 'Kanit', sans-serif; font-size: 2rem; font-weight: 700; color: var(--brown-dk); margin: 12px 0 4px; }
+.status-box               { padding: 16px; border-radius: 10px; margin-top: 16px; text-align: center; font-weight: 600; display: none; }
+.status-box.success       { background: #e8f4e8; color: var(--green);   display: block; }
+.status-box.pending       { background: #FFF8EC; color: #8B6000;        display: block; }
+.status-box.checking      { background: var(--cream); color: var(--gray-mid); display: block; }
+
+/* ── Progress Steps ── */
+.steps                    { display: flex; align-items: center; justify-content: center; margin-bottom: 28px; }
+.step                     { display: flex; flex-direction: column; align-items: center; }
+.step-circle              { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; border: 2px solid var(--gray-lt); color: var(--gray-mid); background: var(--white); transition: all var(--ease); }
+.step.done   .step-circle { background: var(--brown-dk); border-color: var(--brown-dk); color: var(--white); }
+.step.active .step-circle { border-color: var(--brown); color: var(--brown); }
+.step-label               { font-size: .72rem; margin-top: 4px; color: var(--gray-mid); }
+.step-line                { width: 40px; height: 2px; background: var(--gray-lt); margin: 0 6px 18px; transition: background var(--ease); }
+.step-line.done           { background: var(--brown-dk); }
+
+/* ── Misc ── */
+.empty-state     { text-align: center; padding: 48px 20px; color: var(--gray-mid); }
+.empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+.toast           { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--charcoal); color: var(--white); padding: 12px 24px; border-radius: 24px; font-size: .88rem; opacity: 0; pointer-events: none; transition: all .3s ease; z-index: 9999; white-space: nowrap; }
+.toast.show      { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Responsive ── */
+@media (max-width: 400px) {
+  main.content { padding: 20px 12px; }
+  .card        { padding: 20px 16px; }
+  .year-card .year-num { font-size: 1.3rem; }
+}
+
+/* ── Flaticon icon alignment ── */
+.fi { vertical-align: middle; line-height: 1; }
+.form-label .fi, .heading .fi { font-size: .95em; margin-right: 4px; }
+.btn-primary .fi, .btn-outline .fi, .btn-pay .fi { font-size: .9em; margin-right: 4px; }
+.paid-badge .fi { font-size: .85em; margin-right: 3px; }
+.status-box .fi { font-size: 1em; margin-right: 6px; }
+.header-badge .fi { font-size: .8em; margin-right: 4px; }
+.empty-icon { font-size: 2.5rem; display: block; margin-bottom: 12px; color: var(--gray-mid); }
+
+/* ── User card (page 2) ── */
+.user-card { padding: 16px 20px !important; display: flex !important; align-items: center; gap: 14px; }
+.user-avatar { width: 42px; height: 42px; background: var(--brown-dk); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--brown-lt); font-family: 'Kanit', sans-serif; font-size: 1.1rem; font-weight: 700; flex-shrink: 0; }
+.user-name { font-weight: 600; }
+.user-code { font-size: .82rem; color: var(--gray-mid); }
+.user-code .fi { font-size: .8em; }
+
+/* ── btn-success-color ── */
+.btn-success-color { background: var(--green) !important; margin-top: 16px; }
+.btn-success-color:hover { background: #3d6b3d !important; }
+
+/* ── steps-bar ── */
+#steps-bar { background: var(--white); border-bottom: 1px solid var(--gray-lt); padding: 16px; }
+.step-circle .fi { font-size: .8rem; }
+
+/* ── Spin animation ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin .8s linear infinite; }
+
+/* ── Tab Bar ── */
+.tab-bar             { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab-btn             { flex: 1; padding: 11px; border-radius: 10px; border: 2px solid var(--gray-lt); background: var(--white); font-size: .92rem; font-weight: 600; color: var(--gray-mid); transition: all var(--ease); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.tab-btn:hover       { border-color: var(--brown-lt); color: var(--charcoal); }
+.tab-btn.active      { border-color: var(--brown-dk); background: var(--brown-dk); color: var(--white); }
+.tab-count           { background: var(--brown-lt); color: var(--white); border-radius: 20px; padding: 1px 8px; font-size: .75rem; min-width: 20px; text-align: center; }
+.tab-btn.active .tab-count { background: rgba(255,255,255,.3); }
+.tab-count-paid      { background: var(--green); }
+
+/* ── Paid item style ── */
+.payment-item-paid   { opacity: .85; background: #fafdf8 !important; }
+
+/* ── Admin link button ── */
+.btn-admin-link      { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; border: 1.5px solid var(--gray-lt); color: var(--gray-mid); font-size: .85rem; font-weight: 600; transition: all var(--ease); }
+.btn-admin-link:hover{ border-color: var(--brown); color: var(--brown); background: var(--cream); }
+.btn-admin-link .fi  { font-size: .85em; }
+
+/* ── Status box — success detail ── */
+.status-box.success          { line-height: 1.6; padding: 18px 16px; }
+.status-box .status-detail   { display: block; font-size: .8rem; font-weight: 400; opacity: .8; margin: 2px 0 4px; }
+.status-box strong           { font-weight: 700; }
+
+/* ── Error msg ── */
+.error-msg { font-size: .83rem; }
+
+/* ── Kanit body override ── */
+body, button, input, select  { font-family: 'Kanit', 'Sarabun', sans-serif; }
+
+/* ── Countdown box ── */
+.countdown-box {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin: 12px auto 4px; padding: 8px 20px;
+  background: #FFF8EC; color: #8B6000;
+  border-radius: 24px; font-size: .92rem;
+  border: 1.5px solid #E8C86A;
+}
+.countdown-box .fi { font-size: .9em; }
+
+/* ── Success icon ── */
+.success-icon {
+  font-size: 5rem; color: var(--green);
+  margin: 24px auto 12px; line-height: 1;
+  animation: pop .4s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes pop {
+  0%   { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+/* ── Theme Toggle Button ── */
+.theme-toggle {
+  width: 34px; height: 34px;
+  border-radius: 50%; border: 1.5px solid var(--gray-lt);
+  background: var(--white); color: var(--brown-dk);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .95rem; cursor: pointer; transition: all .2s;
+  flex-shrink: 0;
+}
+.theme-toggle:hover { background: var(--cream); border-color: var(--brown-lt); }
+
+/* ── Dark Mode ── */
+[data-theme="dark"] {
+  --white:    #1E1A14;
+  --cream:    #2A2318;
+  --brown-lt: #C8A97A;
+  --brown:    #C8A97A;
+  --brown-dk: #E8C99A;
+  --charcoal: #F0EBE3;
+  --gray-lt:  #3A3028;
+  --gray-mid: #8A7A68;
+  --green:    #6AAA6A;
+  --shadow:   rgba(0,0,0,.4);
+}
+
+[data-theme="dark"] .site-header    { background: #1E1A14; border-color: #3A3028; }
+[data-theme="dark"] .card           { background: #2A2318; }
+[data-theme="dark"] .year-card      { background: #2A2318; border-color: #3A3028; }
+[data-theme="dark"] .payment-item   { background: #2A2318; border-color: #3A3028; }
+[data-theme="dark"] .tab-btn        { background: #2A2318; border-color: #3A3028; }
+[data-theme="dark"] .form-input     { background: #2A2318; border-color: #3A3028; color: #F0EBE3; }
+[data-theme="dark"] .status-box.pending { background: #2A1E08; }
+[data-theme="dark"] .status-box.success { background: #0E2A0E; }
+[data-theme="dark"] .qr-container   { background: #fff; }
+[data-theme="dark"] .countdown-box  { background: #2A1E08; }
+[data-theme="dark"] .theme-toggle   { background: #2A2318; border-color: #3A3028; color: #E8C99A; }
+[data-theme="dark"] #steps-bar      { background: #1E1A14; border-color: #3A3028; }
+[data-theme="dark"] .site-footer    { background: #1E1A14; border-color: #3A3028; }
+[data-theme="dark"] body            { background: #17130E; }
