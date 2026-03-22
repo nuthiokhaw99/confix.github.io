@@ -1,7 +1,7 @@
 // ── components.js — Component Loader ──
 
 const Components = {
-  get root() {
+  _getRoot() {
     if (location.hostname.includes('github.io')) {
       const firstSeg = location.pathname.split('/').filter(Boolean)[0] || '';
       return '/' + firstSeg + '/';
@@ -10,20 +10,16 @@ const Components = {
     return depth === 0 ? '/' : '../'.repeat(depth);
   },
 
-  get base() { return this.root + 'components/'; },
-
-  get adminHref() {
-    return location.pathname.includes('/admin') ? '#' : this.root + 'admin/login/';
-  },
-
   async load(placeholderId, file) {
     const el = document.getElementById(placeholderId);
     if (!el) return;
+    const root = this._getRoot();
+    const adminHref = location.pathname.includes('/admin') ? '#' : root + 'admin/login/';
     try {
-      const res = await fetch(this.base + file);
+      const res = await fetch(root + 'components/' + file);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       let html = await res.text();
-      html = html.replace('ADMIN_LINK', this.adminHref);
+      html = html.replace('ADMIN_LINK', adminHref);
       el.outerHTML = html;
     } catch (err) {
       console.warn('[Components] โหลดไม่สำเร็จ:', file, err.message);
